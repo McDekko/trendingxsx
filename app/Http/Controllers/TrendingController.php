@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
+use App\Models\Like;
 use App\Models\Post;
 use App\Models\TrendingTopic;
-use App\Models\Like;
-use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -65,10 +65,10 @@ class TrendingController extends Controller
     {
         $request->validate([
             'content' => 'required|string',
-            'media' => 'nullable|file|mimes:jpg,jpeg,png,mp4|max:20480'
+            'media' => 'nullable|file|mimes:jpg,jpeg,png,mp4|max:20480',
         ]);
 
-        $username = 'anon_' . Str::random(6);
+        $username = 'anon_'.Str::random(6);
 
         $mediaPath = null;
         $mediaType = null;
@@ -81,10 +81,10 @@ class TrendingController extends Controller
         }
 
         Post::create([
-            'username'   => $username,
-            'content'    => $request->content,
-            'media'      => $mediaPath,
-            'media_type' => $mediaType
+            'username' => $username,
+            'content' => $request->content,
+            'media' => $mediaPath,
+            'media_type' => $mediaType,
         ]);
 
         /**
@@ -95,13 +95,20 @@ class TrendingController extends Controller
         $words = preg_split('/\s+/', strtolower($request->content));
 
         foreach ($words as $word) {
-            $word = trim($word, "#.,!?()[]{}");
+            $word = trim($word, '#.,!?()[]{}');
 
             if (strlen($word) > 3) {
-                TrendingTopic::updateOrCreate(
-                    ['keyword' => $word],
-                    ['post_count' => \DB::raw('post_count + 1')]
-                );
+
+                $topic = TrendingTopic::where('keyword', $word)->first();
+
+                if ($topic) {
+                    $topic->increment('post_count');
+                } else {
+                    TrendingTopic::create([
+                        'keyword' => $word,
+                        'post_count' => 1,
+                    ]);
+                }
             }
         }
 
@@ -117,7 +124,7 @@ class TrendingController extends Controller
     {
         Like::create([
             'post_id' => $id,
-            'username' => 'anon_' . Str::random(5)
+            'username' => 'anon_'.Str::random(5),
         ]);
 
         return back();
@@ -131,13 +138,13 @@ class TrendingController extends Controller
     public function comment(Request $request, $id)
     {
         $request->validate([
-            'comment' => 'required|string'
+            'comment' => 'required|string',
         ]);
 
         Comment::create([
             'post_id' => $id,
-            'username' => 'anon_' . Str::random(5),
-            'comment' => $request->comment
+            'username' => 'anon_'.Str::random(5),
+            'comment' => $request->comment,
         ]);
 
         return back();
