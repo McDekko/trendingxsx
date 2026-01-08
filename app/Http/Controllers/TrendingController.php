@@ -26,7 +26,7 @@ class TrendingController extends Controller
             ->latest()
             ->get();
 
-        return view('trending.index', compact('trending', 'posts'));
+        return view('home', compact('trending', 'posts'));
     }
 
     /**
@@ -41,7 +41,7 @@ class TrendingController extends Controller
             ->latest()
             ->get();
 
-        return view('trending.show', compact('posts', 'keyword'));
+        return view('home', compact('posts', 'keyword'));
     }
 
     /**
@@ -164,6 +164,6 @@ class TrendingController extends Controller
             ->latest()
             ->get();
 
-        return view('search', compact('posts', 'q'));
+        return view('home', compact('posts', 'q'));
     }
 }
