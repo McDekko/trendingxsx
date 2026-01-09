@@ -16,7 +16,7 @@
     @endif
 
     {{-- DELETE POST (PEMILIK SAJA) --}}
-    @if(session('anon_user') === $post->username || (auth()->check() && auth()->user()->name === $post->username))
+    @if(($post->session_id && $post->session_id === session('anon_session_id')) || (auth()->check() && auth()->user()->name === $post->username))
         <form action="{{ route('post.delete', $post->id) }}" method="POST"
               onsubmit="return confirm('Hapus post ini?')">
             @csrf

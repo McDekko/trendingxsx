@@ -50,6 +50,11 @@ class TrendingController extends Controller
      * ========================= */
     public function store(Request $request)
     {
+        // Generate atau ambil session ID untuk track ownership
+        if (!session()->has('anon_session_id')) {
+            session(['anon_session_id' => uniqid('anon_', true)]);
+        }
+
         $username = $this->generateAnonUsername();
 
         $request->validate([
@@ -72,6 +77,7 @@ class TrendingController extends Controller
             'content' => $request->content,
             'media' => $mediaPath,
             'media_type' => $mediaType,
+            'session_id' => session('anon_session_id'),
         ]);
 
         /* TRENDING +3 */

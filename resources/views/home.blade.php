@@ -77,7 +77,7 @@
                 </a>
 
                 {{-- DELETE (HANYA PEMILIK POST) --}}
-                @if ($post->username === session('anon_user'))
+                @if ($post->session_id && $post->session_id === session('anon_session_id'))
                     <form action="/post/{{ $post->id }}"
                         method="POST"
                         onsubmit="return confirm('Hapus postingan ini?')">
