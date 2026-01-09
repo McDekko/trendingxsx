@@ -51,7 +51,7 @@ class TrendingController extends Controller
     public function store(Request $request)
     {
         // Generate atau ambil session ID untuk track ownership
-        if (!session()->has('anon_session_id')) {
+        if (! session()->has('anon_session_id')) {
             session(['anon_session_id' => uniqid('anon_', true)]);
         }
 
@@ -59,15 +59,21 @@ class TrendingController extends Controller
 
         $request->validate([
             'content' => 'required|string',
-            'media' => 'nullable|file|mimes:jpg,jpeg,png,mp4|max:20480',
+            'media' => 'nullable|file|mimes:jpg,jpeg,png,mp4,mov,webm,mkv|max:20480',
         ]);
 
         $mediaPath = null;
         $mediaType = null;
 
         if ($request->hasFile('media')) {
-            $mediaPath = $request->file('media')->store('media', 'public');
-            $mediaType = $request->file('media')->getClientOriginalExtension() === 'mp4'
+            $file = $request->file('media');
+            $mediaPath = $file->store('media', 'public');
+
+            $extension = strtolower($file->getClientOriginalExtension());
+
+            $videoExtensions = ['mp4', 'mkv', 'mov', 'webm'];
+
+            $mediaType = in_array($extension, $videoExtensions)
                 ? 'video'
                 : 'image';
         }
@@ -181,5 +187,56 @@ class TrendingController extends Controller
         }
 
         return back();
+    }
+
+    /* =========================
+     * SHOW TRENDING BY KEYWORD
+     * ========================= */
+    public function show($keyword)
+    {
+        // Ambil postingan yang mengandung keyword
+        $posts = Post::with(['likes', 'comments'])
+            ->where('content', 'LIKE', '%'.$keyword.'%')
+            ->latest()
+            ->get();
+
+        // Ambil daftar trending untuk sidebar
+        $trending = TrendingTopic::orderByDesc('post_count')
+            ->take(10)
+            ->get();
+
+        // Ambil HOT POSTS berdasarkan jumlah like
+        $hotPosts = Post::withCount('likes')
+            ->orderByDesc('likes_count')
+            ->take(5)
+            ->get();
+
+        return view('home', compact('posts', 'trending', 'hotPosts'));
+    }
+
+    /* =========================
+     * SEARCH POSTS
+     * ========================= */
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+
+        $posts = Post::with(['likes', 'comments'])
+            ->where('content', 'LIKE', '%'.$query.'%')
+            ->latest()
+            ->get();
+
+        // Ambil daftar trending untuk sidebar
+        $trending = TrendingTopic::orderByDesc('post_count')
+            ->take(10)
+            ->get();
+
+        // Ambil HOT POSTS berdasarkan jumlah like
+        $hotPosts = Post::withCount('likes')
+            ->orderByDesc('likes_count')
+            ->take(5)
+            ->get();
+
+        return view('home', compact('posts', 'trending', 'hotPosts'));
     }
 }

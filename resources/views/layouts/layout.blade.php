@@ -89,8 +89,13 @@
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Main Layout */
@@ -129,11 +134,9 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: conic-gradient(
-                transparent,
-                rgba(0, 212, 255, 0.1),
-                transparent 30%
-            );
+            background: conic-gradient(transparent,
+                    rgba(0, 212, 255, 0.1),
+                    transparent 30%);
             animation: rotate 4s linear infinite;
         }
 
@@ -152,10 +155,13 @@
         }
 
         @keyframes logoFloat {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateY(0px);
                 filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5));
             }
+
             50% {
                 transform: translateY(-10px);
                 filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.8));
@@ -175,10 +181,13 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translate(-50%, -50%) scale(1);
                 opacity: 0.5;
             }
+
             50% {
                 transform: translate(-50%, -50%) scale(1.2);
                 opacity: 0.8;
@@ -265,8 +274,15 @@
         }
 
         @keyframes shimmer {
-            0%, 100% { left: -100%; }
-            50% { left: 100%; }
+
+            0%,
+            100% {
+                left: -100%;
+            }
+
+            50% {
+                left: 100%;
+            }
         }
 
         .sidebar-card h6 {
@@ -361,6 +377,7 @@
                 opacity: 0;
                 transform: translateX(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateX(0);
@@ -395,6 +412,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -496,9 +514,12 @@
         }
 
         @keyframes fabPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
             }
+
             50% {
                 box-shadow: 0 8px 35px rgba(0, 212, 255, 0.8);
             }
@@ -530,12 +551,14 @@
         }
 
         /* Images & Videos */
-        img, video {
+        img,
+        video {
             border-radius: 12px;
             transition: all 0.3s ease;
         }
 
-        img:hover, video:hover {
+        img:hover,
+        video:hover {
             transform: scale(1.02);
             box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);
         }
@@ -581,6 +604,7 @@
             .main-container {
                 grid-template-columns: 1fr 350px;
             }
+
             .left-sidebar {
                 display: none;
             }
@@ -591,9 +615,11 @@
                 grid-template-columns: 1fr;
                 padding: 10px;
             }
+
             .right-sidebar {
                 display: none;
             }
+
             .center-content {
                 border-left: none;
                 border-right: none;
@@ -676,7 +702,8 @@
             {{-- SEARCH BOX --}}
             <div class="search-box">
                 <form action="{{ route('search') }}" method="GET">
-                    <input type="text" name="q" placeholder="🔍 Cari postingan..." value="{{ request('q') }}" required>
+                    <input type="text" name="q" placeholder="🔍 Cari postingan..." value="{{ request('q') }}"
+                        required>
                 </form>
             </div>
 
@@ -685,6 +712,7 @@
 
         {{-- RIGHT SIDEBAR --}}
         <aside class="right-sidebar">
+
             {{-- TRENDING REALTIME --}}
             <div class="sidebar-card">
                 <h6>
@@ -695,9 +723,10 @@
                     @php
                         $trendingTopics = \App\Models\TrendingTopic::orderByDesc('post_count')->take(8)->get();
                     @endphp
-                    @if($trendingTopics->count() > 0)
+                    @if ($trendingTopics->count() > 0)
                         @foreach ($trendingTopics as $index => $topic)
-                            <a href="/trending/{{ $topic->keyword }}" class="trending-item text-decoration-none d-block">
+                            <a href="/trending/{{ $topic->keyword }}"
+                                class="trending-item text-decoration-none d-block">
                                 <span class="trending-keyword">#{{ $topic->keyword }}</span>
                                 <span class="trending-count">{{ $topic->post_count }} posts</span>
                             </a>
@@ -711,7 +740,11 @@
                 </div>
             </div>
 
-            {{-- HOT POSTS --}}
+            {{-- ===================== --}}
+            {{-- HOT POSTS (DISATUKAN) --}}
+            {{-- UI: CODE PERTAMA --}}
+            {{-- DATA: CODE KEDUA --}}
+            {{-- ===================== --}}
             <div class="sidebar-card">
                 <h6>
                     <i class="fas fa-bolt"></i>
@@ -724,14 +757,14 @@
                             ->take(5)
                             ->get();
                     @endphp
-                    @if($hotPosts->count() > 0)
+
+                    @if ($hotPosts->count() > 0)
                         @foreach ($hotPosts as $post)
                             <a href="/post/{{ $post->id }}" class="hot-post text-decoration-none d-block">
-                                <div class="hot-post-user">@{{ $post->username }}</div>
-                                <div class="hot-post-content">{{ Str::limit($post->content, 80) }}</div>
-                                <div class="hot-post-stats">
-                                    <span><i class="fas fa-heart"></i> {{ $post->likes_count ?? 0 }}</span>
-                                    <span><i class="fas fa-comment"></i> {{ $post->comments_count ?? 0 }}</span>
+                                <div class="mb-2 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+                                    <strong>{{ $post->username }}</strong><br>
+                                    {{ Str::limit($post->content, 50) }}<br>
+                                    ❤️ {{ $post->likes_count }}
                                 </div>
                             </a>
                         @endforeach
@@ -754,7 +787,7 @@
                     @php
                         $recentActivities = \App\Models\Post::latest()->take(6)->get();
                     @endphp
-                    @if($recentActivities->count() > 0)
+                    @if ($recentActivities->count() > 0)
                         @foreach ($recentActivities as $activity)
                             <div class="activity-item">
                                 <span class="activity-user">{{ $activity->username }}</span> posted
@@ -769,6 +802,7 @@
                     @endif
                 </div>
             </div>
+
         </aside>
 
     </div>
@@ -779,9 +813,8 @@
     </a>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
-        // Force video play (fix untuk browser yang block autoplay)
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.querySelector('.video-background video');
             if (video) {
@@ -791,7 +824,6 @@
             }
         });
 
-        // Animated Counter
         function animateCounter(element, target) {
             let current = 0;
             const increment = target / 50;
@@ -806,15 +838,14 @@
             }, 30);
         }
 
-        // Initialize stats (ganti dengan data real dari backend)
         window.addEventListener('DOMContentLoaded', () => {
             animateCounter(document.getElementById('totalPosts'), {{ \App\Models\Post::count() }});
-            animateCounter(document.getElementById('totalUsers'), {{ \DB::table('posts')->distinct('username')->count('username') }});
+            animateCounter(document.getElementById('totalUsers'),
+                {{ \DB::table('posts')->distinct('username')->count('username') }});
             animateCounter(document.getElementById('totalLikes'), {{ \App\Models\Like::count() }});
             animateCounter(document.getElementById('onlineNow'), Math.floor(Math.random() * 50) + 10);
         });
 
-        // Auto refresh activity feed setiap 30 detik
         setInterval(() => {
             // Tambahkan AJAX call untuk update activity feed
         }, 30000);
