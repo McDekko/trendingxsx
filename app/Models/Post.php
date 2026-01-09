@@ -7,8 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Post extends Model
 {
     protected $fillable = [
-        'username', 'content', 'media', 'media_type',
+        'user_id', 'username', 'content', 'media', 'media_type',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function likes()
     {
