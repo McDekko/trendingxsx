@@ -2,46 +2,56 @@
 
 @section('content')
 
-<div class="card p-4 mb-4">
-    <h5>{{ $post->username }}</h5>
+<div class="post-box">
+    <p><strong>{{ $post->username }}</strong></p>
+    <p>{{ $post->content }}</p>
 
-    <p class="fs-5">{{ $post->content }}</p>
-
+    {{-- MEDIA --}}
     @if($post->media)
         @if($post->media_type === 'image')
-            <img src="{{ asset('storage/' . $post->media) }}" class="img-fluid rounded mt-3">
+            <img src="{{ asset('storage/'.$post->media) }}" width="350">
         @else
-            <video controls class="w-100 mt-3">
-                <source src="{{ asset('storage/' . $post->media) }}">
-            </video>
+            <video src="{{ asset('storage/'.$post->media) }}" controls width="350"></video>
         @endif
     @endif
 
-    <div class="d-flex gap-3 mt-3">
-        <form action="/like/{{ $post->id }}" method="POST">
+    {{-- DELETE POST (PEMILIK SAJA) --}}
+    @if(session('anon_user') === $post->username || (auth()->check() && auth()->user()->name === $post->username))
+        <form action="{{ route('post.delete', $post->id) }}" method="POST"
+              onsubmit="return confirm('Hapus post ini?')">
             @csrf
-            <button class="btn btn-outline-primary">
-                ❤️ {{ $post->likes->count() }}
-            </button>
+            @method('DELETE')
+            <button style="color:red">Hapus Post</button>
         </form>
-    </div>
+    @endif
+
+    <hr>
+
+    {{-- LIKE --}}
+    <form action="{{ route('post.like', $post->id) }}" method="POST">
+        @csrf
+        <button>❤️ {{ $post->likes->count() }}</button>
+    </form>
+
+    <hr>
+
+    {{-- COMMENTS --}}
+    @foreach($post->comments as $comment)
+        <p>
+            <strong>{{ $comment->username }}</strong> :
+            {{ $comment->comment }}
+        </p>
+    @endforeach
+
+    <hr>
+
+    {{-- COMMENT FORM --}}
+    <form action="{{ route('post.comment', $post->id) }}" method="POST">
+        @csrf
+        <textarea name="comment" required></textarea>
+        <br>
+        <button>Kirim</button>
+    </form>
 </div>
-
-<h5>Komentar</h5>
-
-@forelse($post->comments as $comment)
-    <div class="border-bottom py-2">
-        <b>{{ $comment->username }}</b>
-        <p>{{ $comment->comment }}</p>
-    </div>
-@empty
-    <p class="text-muted">Belum ada komentar</p>
-@endforelse
-
-<form action="/comment/{{ $post->id }}" method="POST" class="mt-3">
-    @csrf
-    <textarea name="comment" class="form-control" required></textarea>
-    <button class="btn btn-primary mt-2">Kirim</button>
-</form>
 
 @endsection

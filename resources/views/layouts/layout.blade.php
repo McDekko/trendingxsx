@@ -48,21 +48,15 @@
         <nav class="d-flex justify-content-between align-items-center p-3">
             <h5 class="mb-0">Social</h5>
             <div class="d-flex gap-3 fs-5">
-                
-        {{-- SEARCH --}}
-        <form action="{{ route('search') }}" method="GET" class="d-flex flex-grow-1">
-            <input
-                type="text"
-                name="q"
-                class="form-control form-control-sm me-2"
-                placeholder="Cari postingan..."
-                value="{{ request('q') }}"
-                required
-            >
-            <button class="btn btn-outline-light btn-sm">
-                search
-            </button>
-        </form>
+
+                {{-- SEARCH --}}
+                <form action="{{ route('search') }}" method="GET" class="d-flex flex-grow-1">
+                    <input type="text" name="q" class="form-control form-control-sm me-2"
+                        placeholder="Cari postingan..." value="{{ request('q') }}" required>
+                    <button class="btn btn-outline-light btn-sm">
+                        search
+                    </button>
+                </form>
                 {{-- <i class="fa-regular fa-square-plus"></i>
             <i class="fa-regular fa-heart"></i>
             <i class="fa-regular fa-paper-plane"></i> --}}
@@ -87,11 +81,11 @@
 
     {{-- BOTTOM NAV --}}
     <nav class="bottom-nav py-4">
-           <div class="container center gap-2">
-        {{-- TAMBAH POST --}}
-    <a href="{{ route('post.create') }}"
-       class="btn btn-primary rounded-circle position-absolute d-flex align-items-center justify-content-center"
-       style="
+        <div class="container center gap-2">
+            {{-- TAMBAH POST --}}
+            <a href="{{ route('post.create') }}"
+                class="btn btn-primary rounded-circle position-absolute d-flex align-items-center justify-content-center"
+                style="
             width:56px;
             height:56px;
             left:50%;
@@ -99,12 +93,12 @@
             transform:translateX(-50%);
             font-size:24px;
        ">
-        +
-    </a>
+                +
+            </a>
 
 
-    </div>
-</nav>
+        </div>
+    </nav>
 
 
 </body>

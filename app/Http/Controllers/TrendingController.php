@@ -7,18 +7,26 @@ use App\Models\Like;
 use App\Models\Post;
 use App\Models\TrendingTopic;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class TrendingController extends Controller
 {
-    /**
-     * =========================
-     * HALAMAN UTAMA (TIMELINE)
-     * =========================
-     */
+    /* =========================
+     * GENERATE ANON NAME (ALWAYS RANDOM)
+     * ========================= */
+    private function generateAnonUsername()
+    {
+        $prefix = ['Anon', 'Ghost', 'Shadow', 'Silent', 'Mystic', 'Hidden'];
+
+        return $prefix[array_rand($prefix)].rand(1000, 9999);
+    }
+
+    /* =========================
+     * TIMELINE
+     * ========================= */
     public function index()
     {
-        $trending = TrendingTopic::orderByDesc('post_count')
+        $trending = TrendingTopic::where('post_count', '>=', 5)
+            ->orderByDesc('post_count')
             ->take(10)
             ->get();
 
@@ -29,46 +37,25 @@ class TrendingController extends Controller
         return view('home', compact('trending', 'posts'));
     }
 
-    /**
-     * =========================
-     * DETAIL TRENDING TOPIC
-     * =========================
-     */
-    public function show($keyword)
+    /* =========================
+     * FORM CREATE POST
+     * ========================= */
+    public function create()
     {
-        $posts = Post::with(['likes', 'comments'])
-            ->where('content', 'like', "%{$keyword}%")
-            ->latest()
-            ->get();
-
-        return view('home', compact('posts', 'keyword'));
+        return view('post.create');
     }
 
-    /**
-     * =========================
-     * DETAIL SATU POST (ALA X)
-     * =========================
-     */
-    public function postDetail($id)
-    {
-        $post = Post::with(['likes', 'comments'])->findOrFail($id);
-
-        return view('post.commentsection', compact('post'));
-    }
-
-    /**
-     * =========================
-     * SIMPAN POST BARU
-     * =========================
-     */
+    /* =========================
+     * SIMPAN POST (ANON NEW NAME)
+     * ========================= */
     public function store(Request $request)
     {
+        $username = $this->generateAnonUsername();
+
         $request->validate([
             'content' => 'required|string',
             'media' => 'nullable|file|mimes:jpg,jpeg,png,mp4|max:20480',
         ]);
-
-        $username = 'anon_'.Str::random(6);
 
         $mediaPath = null;
         $mediaType = null;
@@ -80,90 +67,113 @@ class TrendingController extends Controller
                 : 'image';
         }
 
-        Post::create([
+        $post = Post::create([
             'username' => $username,
             'content' => $request->content,
             'media' => $mediaPath,
             'media_type' => $mediaType,
         ]);
 
-        /**
-         * =========================
-         * UPDATE TRENDING
-         * =========================
-         */
-        $words = preg_split('/\s+/', strtolower($request->content));
+        /* TRENDING +3 */
+        $words = array_unique(preg_split('/\s+/', strtolower($request->content)));
 
         foreach ($words as $word) {
-            $word = trim($word, '#.,!?()[]{}');
-
-            if (strlen($word) > 3) {
-
-                $topic = TrendingTopic::where('keyword', $word)->first();
-
-                if ($topic) {
-                    $topic->increment('post_count');
-                } else {
-                    TrendingTopic::create([
-                        'keyword' => $word,
-                        'post_count' => 1,
-                    ]);
-                }
+            $word = trim($word, '.,!?()[]{}');
+            if (strlen($word) < 4) {
+                continue;
             }
+
+            $topic = TrendingTopic::firstOrCreate(
+                ['keyword' => $word],
+                ['post_count' => 0]
+            );
+
+            $topic->increment('post_count', 3);
         }
 
-        return redirect()->back();
+        return redirect()->route('home');
     }
 
-    /**
-     * =========================
-     * LIKE POST
-     * =========================
-     */
+    /* =========================
+     * DETAIL POST
+     * ========================= */
+    public function postDetail($id)
+    {
+        $post = Post::with(['likes', 'comments'])->findOrFail($id);
+
+        return view('post.commentsection', compact('post'));
+    }
+
+    /* =========================
+     * DELETE POST (NO OWNER CHECK)
+     * ========================= */
+    public function destroy($id)
+    {
+        Post::findOrFail($id)->delete();
+
+        return redirect()->route('home');
+    }
+
+    /* =========================
+     * LIKE (ANON RANDOM)
+     * ========================= */
     public function like($id)
     {
-        Like::create([
+        $username = $this->generateAnonUsername();
+
+        $like = Like::firstOrCreate([
             'post_id' => $id,
-            'username' => 'anon_'.Str::random(5),
+            'username' => $username,
         ]);
+
+        if ($like->wasRecentlyCreated) {
+            $post = Post::find($id);
+
+            $words = array_unique(preg_split('/\s+/', strtolower($post->content)));
+            foreach ($words as $word) {
+                $word = trim($word, '.,!?()[]{}');
+                if (strlen($word) < 4) {
+                    continue;
+                }
+
+                TrendingTopic::where('keyword', $word)
+                    ->increment('post_count', 1);
+            }
+        }
 
         return back();
     }
 
-    /**
-     * =========================
-     * KOMENTAR POST
-     * =========================
-     */
+    /* =========================
+     * COMMENT (ANON RANDOM)
+     * ========================= */
     public function comment(Request $request, $id)
     {
+        $username = $this->generateAnonUsername();
+
         $request->validate([
             'comment' => 'required|string',
         ]);
 
         Comment::create([
             'post_id' => $id,
-            'username' => 'anon_'.Str::random(5),
+            'username' => $username,
             'comment' => $request->comment,
         ]);
 
+        $post = Post::find($id);
+
+        $words = array_unique(preg_split('/\s+/', strtolower($post->content)));
+        foreach ($words as $word) {
+            $word = trim($word, '.,!?()[]{}');
+            if (strlen($word) < 4) {
+                continue;
+            }
+
+            TrendingTopic::where('keyword', $word)
+                ->increment('post_count', 2);
+        }
+
         return back();
-    }
-
-    /**
-     * =========================
-     * SEARCH GLOBAL
-     * =========================
-     */
-    public function search(Request $request)
-    {
-        $q = $request->q;
-
-        $posts = Post::with(['likes', 'comments'])
-            ->where('content', 'like', "%{$q}%")
-            ->latest()
-            ->get();
-
-        return view('home', compact('posts', 'q'));
     }
 }
