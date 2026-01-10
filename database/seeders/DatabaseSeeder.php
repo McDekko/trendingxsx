@@ -24,7 +24,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             TrendingSeeder::class,
-            ScrapingDataSeeder::class,
         ]);
     }
 }
