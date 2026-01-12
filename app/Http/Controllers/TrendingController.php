@@ -219,17 +219,12 @@ class TrendingController extends Controller
      * ========================= */
     public function search(Request $request)
     {
-    $query = $request->input('query', '');
+        $query = $request->input('query');
 
-        $posts = [];
-
-        // Only search if query is not empty
-        if (!empty(trim($query))) {
-            $posts = Post::with(['likes', 'comments'])
-                ->where('content', 'LIKE', '%'.$query.'%')
-                ->latest()
-                ->get();
-        }
+        $posts = Post::with(['likes', 'comments'])
+            ->where('content', 'LIKE', '%'.$query.'%')
+            ->latest()
+            ->get();
 
         // Ambil daftar trending untuk sidebar
         $trending = TrendingTopic::orderByDesc('post_count')
